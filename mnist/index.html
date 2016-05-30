@@ -3,9 +3,9 @@
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <title>MNIST demo</title>
+  <title>手写数字识别过程演示</title>
   <meta name="description" content="">
-  <meta name="author" content="">
+  <meta name="author" content="felix">
 <style>
 .layer {
   border: 1px solid #999;
@@ -492,25 +492,19 @@ var step = function(sample) {
   // visualize training status
   var train_elt = document.getElementById("trainstats");
   train_elt.innerHTML = '';
-  var t = 'Forward time per example: ' + stats.fwd_time + 'ms';
+  var t = '每个样本前馈所花时间: ' + stats.fwd_time + 'ms';
   train_elt.appendChild(document.createTextNode(t));
   train_elt.appendChild(document.createElement('br'));
-  var t = 'Backprop time per example: ' + stats.bwd_time + 'ms';
+  var t = '每个样本反馈所花时间: ' + stats.bwd_time + 'ms';
   train_elt.appendChild(document.createTextNode(t));
   train_elt.appendChild(document.createElement('br'));
-  var t = 'Classification loss: ' + f2t(xLossWindow.get_average());
+  var t = 'loss值: ' + (f2t(xLossWindow.get_average()+wLossWindow.get_average()));
   train_elt.appendChild(document.createTextNode(t));
   train_elt.appendChild(document.createElement('br'));
-  var t = 'L2 Weight decay loss: ' + f2t(wLossWindow.get_average());
+  var t = '准确率: ' + f2t(trainAccWindow.get_average());
   train_elt.appendChild(document.createTextNode(t));
   train_elt.appendChild(document.createElement('br'));
-  var t = 'Training accuracy: ' + f2t(trainAccWindow.get_average());
-  train_elt.appendChild(document.createTextNode(t));
-  train_elt.appendChild(document.createElement('br'));
-  var t = 'Validation accuracy: ' + f2t(valAccWindow.get_average());
-  train_elt.appendChild(document.createTextNode(t));
-  train_elt.appendChild(document.createElement('br'));
-  var t = 'Examples seen: ' + step_num;
+  var t = '已经训练的样本数: ' + step_num;
   train_elt.appendChild(document.createTextNode(t));
   train_elt.appendChild(document.createElement('br'));
 
@@ -563,8 +557,8 @@ var update_net_param_display = function() {
 var toggle_pause = function() {
   paused = !paused;
   var btn = document.getElementById('buttontp');
-  if(paused) { btn.value = 'resume' }
-  else { btn.value = 'pause'; }
+  if(paused) { btn.value = '开始' }
+  else { btn.value = '暂停'; }
 }
 var dump_json = function() {
   document.getElementById("dumpjson").value = JSON.stringify(net.toJSON());
@@ -598,32 +592,36 @@ var change_net = function() {
 </script>
 <body>
   <div id="wrap">
-  <h2 style="text-align: center;">MNIST demo</h2>
-  <h1>Training Stats</h1>
+  <h2 style="text-align: center;">手写数字识别过程演示</h2>
+  <h1>描述</h1>
+  <p>
+    本程序每次处理一个28*28大小的MNIST图片，修剪为24*24大小后作为神经网络的输入层。训练数据集大小为60000条，测试数据为3000条。经过指定批处理次的训练过程后，更新一次权重；经过100次训练后，将网络当前的状态可视化显示；经过1000次训练过程后，从3000条测试数据中随机选出50条进行预测，并判断正误。
+  </p>
+  <h1>训练状态</h1>
   <div class="divsec" style="270px;">
     <div class="secpart">
-      <input id="buttontp" type="submit" value="pause" onclick="toggle_pause();" style="width: 100px; height:30px; background-color: #FCC;"/>
+      <input id="buttontp" type="submit" value="暂停" onclick="toggle_pause();" style="width: 100px; height:30px; background-color: #FCC;"/>
       <div id="trainstats"></div>
 
       <div id="controls">
-        Learning rate: <input name="lri" type="text" maxlength="20" id="lr_input"/>
-        <input id="buttonlr" type="submit" value="change" onclick="change_lr();"/>
+        学习速率: <input name="lri" type="text" maxlength="20" id="lr_input"/>
+        <input id="buttonlr" type="submit" value="调整" onclick="change_lr();"/>
         <br />
 
-        Momentum: <input name="momi" type="text" maxlength="20" id="momentum_input"/>
-        <input id="buttonmom" type="submit" value="change" onclick="change_momentum();"/>
+        动量参数: <input name="momi" type="text" maxlength="20" id="momentum_input"/>
+        <input id="buttonmom" type="submit" value="调整" onclick="change_momentum();"/>
         <br />
 
-        Batch size: <input name="bsi" type="text" maxlength="20" id="batch_size_input"/>
-        <input id="buttonbs" type="submit" value="change" onclick="change_batch_size();"/>
+        批处理大小: <input name="bsi" type="text" maxlength="20" id="batch_size_input"/>
+        <input id="buttonbs" type="submit" value="调整" onclick="change_batch_size();"/>
         <br />
 
-        Weight decay: <input name="wdi" type="text" maxlength="20" id="decay_input"/>
-        <input id="buttonwd" type="submit" value="change" onclick="change_decay();"/>
+        权重衰减率: <input name="wdi" type="text" maxlength="20" id="decay_input"/>
+        <input id="buttonwd" type="submit" value="调整" onclick="change_decay();"/>
       </div>
 
-      <input id="buttondj" type="submit" value="save network snapshot as JSON" onclick="dump_json();"/><br />
-      <input id="buttonlfj" type="submit" value="init network from JSON snapshot" onclick="load_from_json();"/><br />
+      <input id="buttondj" type="submit" value="以JSON格式保存网络快照" onclick="dump_json();"/><br />
+      <input id="buttonlfj" type="submit" value="使用快照初始化网络" onclick="load_from_json();"/><br />
       <textarea id="dumpjson"></textarea>
     </div>
     <div class="secpart">
@@ -633,25 +631,25 @@ var change_net = function() {
         <canvas id="lossgraph">
         </canvas>
         <br />
-        <input id="buttoncg" type="submit" value="clear graph" onclick="clear_graph();"/>
+        <input id="buttoncg" type="submit" value="清空图表" onclick="clear_graph();"/>
       </div>
     </div>
     <div style="clear:both;"></div>
   </div>
 
-  <h1>Instantiate a Network and Trainer</h1>
+  <h1>配置网络结构及训练模型</h1>
   <div>
     <textarea id="newnet" style="width:100%; height:200px;"></textarea><br />
-    <input id="buttonnn" type="submit" value="change network" onclick="change_net();" style="width:200px;height:30px;"/>
+    <input id="buttonnn" type="submit" value="调整网络结构" onclick="change_net();" style="width:200px;height:30px;"/>
   </div>
 
   <div class="divsec">
-  <h1>Network Visualization</h1>
+  <h1>网络可视化</h1>
     <div id="visnet"></div>
   </div>
   
   <div class="divsec">
-  <h1>Example predictions on Test set</h1>
+  <h1>在测试集上的预测结果</h1>
     <div id="testset_acc"></div>
   </div>
 
